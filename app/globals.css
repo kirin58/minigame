@@ -1,0 +1,130 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #fafaf9;
+  --fg: #1c1917;
+  --muted: #78716c;
+  --line: #e7e5e4;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+}
+
+/* thin grid paper feel, very subtle */
+.paper-grid {
+  background-image:
+    linear-gradient(to right, #00000008 1px, transparent 1px),
+    linear-gradient(to bottom, #00000008 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* game canvas pixel rendering */
+canvas.pixel {
+  image-rendering: pixelated;
+}
+
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid #1c1917;
+  outline-offset: 2px;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- minimal motion ---------- */
+/* ลอยขึ้นเบาๆ ใช้กับ hero + การ์ด (delay ผ่าน --d) */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.anim-rise {
+  opacity: 0;
+  animation: rise 0.55s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+  animation-delay: var(--d, 0ms);
+}
+
+/* กล่องเกม: เฟดเข้านิ่มๆ ไม่ขยับเยอะ */
+@keyframes fadein {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.anim-fade {
+  opacity: 0;
+  animation: fadein 0.4s ease forwards;
+  animation-delay: var(--d, 0ms);
+}
+
+/* จุดสถานะ: กะพริบนุ่มๆ */
+@keyframes softpulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.anim-pulse-soft {
+  animation: softpulse 2s ease-in-out infinite;
+}
+
+/* การ์ด: ยกขึ้นนิดเดียวตอน hover */
+.card-lift {
+  transition:
+    transform 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+}
+.card-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+}
+.card-lift:active {
+  transform: translateY(0);
+}
+
+/* ปุ่ม: ยุบเบาๆ ตอนกด */
+.btn-press {
+  transition: transform 0.12s ease;
+}
+.btn-press:active {
+  transform: scale(0.97);
+}
+
+/* คนที่ตั้งลด motion ไว้: ปิดอนิเมชั่นทั้งหมด */
+@media (prefers-reduced-motion: reduce) {
+  .anim-rise,
+  .anim-fade,
+  .anim-pulse-soft {
+    opacity: 1;
+    animation: none;
+  }
+  .card-lift:hover,
+  .card-lift:active,
+  .btn-press:active {
+    transform: none;
+  }
+}
