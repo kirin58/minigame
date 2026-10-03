@@ -1,0 +1,10 @@
+# Netlify: build Next.js แบบ static export แล้วเสิร์ฟโฟลเดอร์ out/
+[build]
+  command = "npm run build"
+  publish = "out"
+
+# service worker ต้องไม่ถูก cache ตาม CDN/บราว์เซอร์ ไม่งั้นอัปเดตไม่ออก
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"
