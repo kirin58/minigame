@@ -2,6 +2,7 @@
 
 import { useMemo, useState, type CSSProperties } from "react";
 import { CAT_STYLE, GAMES, type Category } from "@/lib/games";
+import OfflineStatus from "@/components/OfflineStatus";
 
 const FILTERS: ("ทั้งหมด" | Category)[] = [
   "ทั้งหมด",
@@ -85,10 +86,7 @@ export default function Home() {
               <div className="flex items-center gap-2 rounded-full border border-stone-300 bg-white px-3 py-1.5 text-[13px] text-stone-600">
                 <span className="tabular">คีย์บอร์ด + เมาส์ + ทัช</span>
               </div>
-              <div className="flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-[13px] text-sky-800">
-                <span className="h-2 w-2 rounded-full bg-sky-600" />
-                <span>เล่นออฟไลน์ได้ ไม่ต้องใช้เน็ต</span>
-              </div>
+              <OfflineStatus />
             </div>
 
             {/* search + filter */}

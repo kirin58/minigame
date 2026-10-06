@@ -2,14 +2,11 @@
 
 import { useEffect } from "react";
 
-/** ลงทะเบียน service worker เฉพาะ production build (dev ไม่ลง กัน cache กวน HMR) */
+/** ลงทะเบียน service worker ทันที (ไม่รอ load) เฉพาะ production build */
 export default function SwRegister() {
   useEffect(() => {
     if ("serviceWorker" in navigator && process.env.NODE_ENV === "production") {
-      const register = () =>
-        navigator.serviceWorker.register("/sw.js").catch(() => {});
-      if (document.readyState === "complete") register();
-      else window.addEventListener("load", register, { once: true });
+      navigator.serviceWorker.register("/sw.js").catch(() => {});
     }
   }, []);
   return null;

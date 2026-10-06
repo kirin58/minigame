@@ -24,6 +24,9 @@ const PAGES = [
 
 const STATIC_FILES = ["/manifest.webmanifest", "/icon.svg"];
 
+// เครื่องหมายว่าโหลดครบแล้ว (มีเฉพาะใน cache ไม่ได้เป็นไฟล์จริงบน server)
+const READY_MARK = "/__offline-ready";
+
 async function putIfOk(cache, url) {
   try {
     if (await cache.match(url)) return;
@@ -54,10 +57,26 @@ async function precacheAll() {
       /* หน้านี้โหลดไม่ได้: ข้าม */
     }
   }
+  // เสร็จ: ปักหมุดให้หน้าเว็บเช็คได้ว่าโหลดครบแล้ว
+  try {
+    await cache.put(
+      READY_MARK,
+      new Response(CACHE + " ready", {
+        headers: { "Content-Type": "text/plain" },
+      })
+    );
+  } catch {
+    /* ข้าม */
+  }
 }
 
 self.addEventListener("install", (event) => {
   event.waitUntil(precacheAll().then(() => self.skipWaiting()));
+});
+
+// หน้าเว็บสั่งได้: PRECACHE = โหลดซ้ำให้ครบ (ข้ามไฟล์ที่มีแล้ว)
+self.addEventListener("message", (event) => {
+  if (event.data === "PRECACHE") event.waitUntil(precacheAll());
 });
 
 self.addEventListener("activate", (event) => {
