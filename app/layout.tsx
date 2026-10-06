@@ -7,7 +7,12 @@ export const metadata: Metadata = {
   description:
     "รวมมินิเกม 12 เกม ทั้ง Snake, 2048, Minesweeper, Tetris, Breakout, จำคู่, Simon, ตีตุ่น, XO, เป่ายิ้งฉุบ, Hangman, ทายตัวเลข เล่นฟรี ไม่ต้องติดตั้ง เล่นออฟไลน์ได้",
   manifest: "/manifest.webmanifest",
-  icons: { icon: "/icon.svg" },
+  icons: { icon: ["/icon.svg", "/icon-192.png"], apple: "/apple-touch-icon.png" },
+  appleWebApp: {
+    capable: true,
+    title: "minigames",
+    statusBarStyle: "default",
+  },
 };
 
 export const viewport = {
