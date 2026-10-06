@@ -1,16 +1,63 @@
-/* minigames service worker — ทำให้เล่นออฟไลน์ได้หลังเปิดครั้งแรก
-   กลยุทธ์: หน้าเว็บใช้ network-first (fallback ไป cache /offline),
-   ไฟล์ static ใช้ stale-while-revalidate ทั้งหมดเป็น same-origin ล้วน */
-const CACHE = "minigames-v1";
-const CORE = ["/", "/offline", "/manifest.webmanifest", "/icon.svg"];
+/* minigames service worker — เปิดเว็บครั้งเดียว (มีเน็ต) แล้วเล่นออฟไลน์ได้ทุกเกม
+   install: ดาวน์โหลดทุกหน้า + ไฟล์ js/css ของหน้านั้นเก็บใน cache
+   หน้าเว็บ: network-first, พังแล้ว fallback ไป cache (/offline)
+   ไฟล์ static: stale-while-revalidate ทั้งหมด same-origin ล้วน */
+const CACHE = "minigames-v2";
+
+// ต้องตรงกับ slug ใน lib/games.ts
+const PAGES = [
+  "/",
+  "/offline",
+  "/games/snake",
+  "/games/tictactoe",
+  "/games/memory",
+  "/games/2048",
+  "/games/minesweeper",
+  "/games/breakout",
+  "/games/simon",
+  "/games/whack",
+  "/games/rps",
+  "/games/hangman",
+  "/games/guess",
+  "/games/reaction",
+];
+
+const STATIC_FILES = ["/manifest.webmanifest", "/icon.svg"];
+
+async function putIfOk(cache, url) {
+  try {
+    if (await cache.match(url)) return;
+    const res = await fetch(url);
+    if (res.ok) await cache.put(url, res);
+  } catch {
+    /* ออฟไลน์/ไฟล์ไม่มี: ข้าม */
+  }
+}
+
+async function precacheAll() {
+  const cache = await caches.open(CACHE);
+  for (const u of STATIC_FILES) await putIfOk(cache, u);
+
+  for (const page of PAGES) {
+    try {
+      const res = await fetch(page);
+      if (!res.ok) continue;
+      // อ่าน html หาไฟล์ js/css ของหน้านั้น (/_next/...) แล้วโหลดเก็บด้วย
+      const html = await res.clone().text();
+      await cache.put(page, res);
+      const urls = new Set();
+      const re = /(?:src|href)="(\/[^"]+\.(?:js|css))"/g;
+      let m;
+      while ((m = re.exec(html)) !== null) urls.add(m[1]);
+      await Promise.all([...urls].map((u) => putIfOk(cache, u)));
+    } catch {
+      /* หน้านี้โหลดไม่ได้: ข้าม */
+    }
+  }
+}
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches
-      .open(CACHE)
-      .then((c) => c.addAll(CORE))
-      .then(() => self.skipWaiting())
-  );
+  event.waitUntil(precacheAll().then(() => self.skipWaiting()));
 });
 
 self.addEventListener("activate", (event) => {
@@ -40,9 +87,7 @@ self.addEventListener("fetch", (event) => {
           return res;
         })
         .catch(() =>
-          caches
-            .match(request)
-            .then((m) => m || caches.match("/offline"))
+          caches.match(request).then((m) => m || caches.match("/offline"))
         )
     );
     return;
